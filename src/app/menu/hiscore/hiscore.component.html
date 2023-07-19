@@ -1,0 +1,18 @@
+<h2 nText="menu.hiscore"></h2>
+<table>
+    <tr>
+        <th colspan="2" nText="hiscore.mode"></th>
+        <th nText="game.score"></th>
+        <th nText="hiscore.max"></th>
+    </tr>
+    <tr *ngFor="let r of records">
+        <td>{{r.size}}&times;{{r.size}}</td>
+        <td>
+            <span *ngIf="r.items" nText="menu.level1"></span>
+            <span *ngIf="!r.items" nText="menu.level2"></span>
+        </td>
+        <td class="number">{{r.score}}</td>
+        <td class="number">{{r.maxNumber}}</td>
+    </tr>
+</table>
+<button type="button" nText="menu.back" routerLink=".."></button>

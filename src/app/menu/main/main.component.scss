@@ -1,0 +1,9 @@
+@import '../../../style/shared.scss';
+
+:host {
+    @include menu;
+}
+
+.version {
+    font-size: 3vh;
+}

@@ -1,0 +1,5 @@
+@import '../../../style/shared.scss';
+
+:host {
+    @include menu;
+}

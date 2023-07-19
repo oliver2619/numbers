@@ -1,0 +1,6 @@
+<div><span nText="game.score"></span>: {{score}}</div>
+<svg #svg (pointerdown)="pointerDown($event)" (pointerup)="pointerUp($event)" (pointermove)="pointerMove($event)"></svg>
+<div [ngStyle]="{visibility: isOver ? 'visible' : 'hidden'}" nText="game.over"></div>
+<div class="button-list">
+    <button type="button" nText="menu.back" routerLink="/menu"></button>
+</div>
