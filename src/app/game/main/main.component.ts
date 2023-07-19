@@ -41,6 +41,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
       this.shiftX = 0;
       this.shiftY = 0;
     }
+    ev.preventDefault();
   }
 
   pointerUp(ev: PointerEvent) {
@@ -49,6 +50,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
       this.svg!.nativeElement.releasePointerCapture(ev.pointerId);
       this.gameService.moved(this.shiftX, this.shiftY);
     }
+    ev.preventDefault();
   }
 
   pointerMove(ev: PointerEvent) {
@@ -57,5 +59,6 @@ export class MainComponent implements AfterViewInit, OnDestroy {
       this.shiftY += ev.movementY;
       this.gameService.moving(this.shiftX, this.shiftY);
     }
+    ev.preventDefault();
   }
 }

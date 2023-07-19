@@ -1,12 +1,14 @@
 export class SvgAdapter {
 
-    private static readonly TILE_SIZE = 11;
+
     private static readonly TILE_PADDING = 1;
-    private static readonly GRID_FACTOR = this.TILE_SIZE + this.TILE_PADDING;
     private static readonly PADDING = 0.5;
     private static readonly TEXT_COLOR: string[] = ['#9a60b4', '#8600b3', '#2d00b3', '#002db3', '#0086b3', '#00b386', '#00b32d', '#2db300', '#86b300', '#b38600', '#b32d00', '#fff', '#fff', '#fff', '#fff', '#fff'];
     private static readonly FILL_COLOR: string[] = ['#e6acd7', '#d7ace6', '#baace6', '#acbae6', '#acd7e6', '#ace6d7', '#ace6ba', '#bae6ac', '#d7e6ac', '#e6d7ac', '#e6baac', '#9a60b4', '#d7ace6', '#baace6', '#acbae6', '#acd7e6'];
     private static readonly BORDER_COLOR: string[] = ['#9a60b4', '#8600b3', '#2d00b3', '#002db3', '#0086b3', '#00b386', '#00b32d', '#2db300', '#86b300', '#b38600', '#b32d00', '#9a60b4', '#d7ace6', '#baace6', '#acbae6', '#acd7e6'];
+
+    private TILE_SIZE = 9;
+    private GRID_FACTOR = this.TILE_SIZE + SvgAdapter.TILE_PADDING;
 
     private readonly numberRects: Array<SVGRectElement>;
     private readonly numberTexts: Array<SVGTextElement>;
@@ -21,8 +23,10 @@ export class SvgAdapter {
     }
 
     init(size: number) {
-        this.element.setAttribute('width', `${SvgAdapter.PADDING * 2 + size * SvgAdapter.GRID_FACTOR - SvgAdapter.TILE_PADDING}vh`);
-        this.element.setAttribute('height', `${SvgAdapter.PADDING * 2 + size * SvgAdapter.GRID_FACTOR - SvgAdapter.TILE_PADDING}vh`);
+        this.TILE_SIZE = 9 - (size - 4) * 2;
+        this.GRID_FACTOR = this.TILE_SIZE + SvgAdapter.TILE_PADDING;
+        this.element.setAttribute('width', `${SvgAdapter.PADDING * 2 + size * this.GRID_FACTOR - SvgAdapter.TILE_PADDING}vh`);
+        this.element.setAttribute('height', `${SvgAdapter.PADDING * 2 + size * this.GRID_FACTOR - SvgAdapter.TILE_PADDING}vh`);
         for (let y = 0; y < size; ++y) {
             for (let x = 0; x < size; ++x) {
                 this.createField(x, y);
@@ -58,10 +62,10 @@ export class SvgAdapter {
 
     private createField(x: number, y: number) {
         const rt = this.element.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rt.x.baseVal.valueAsString = `${SvgAdapter.PADDING + x * SvgAdapter.GRID_FACTOR}vh`;
-        rt.y.baseVal.valueAsString = `${SvgAdapter.PADDING + y * SvgAdapter.GRID_FACTOR}vh`;
-        rt.width.baseVal.valueAsString = `${SvgAdapter.TILE_SIZE}vh`;
-        rt.height.baseVal.valueAsString = `${SvgAdapter.TILE_SIZE}vh`;
+        rt.x.baseVal.valueAsString = `${SvgAdapter.PADDING + x * this.GRID_FACTOR}vh`;
+        rt.y.baseVal.valueAsString = `${SvgAdapter.PADDING + y * this.GRID_FACTOR}vh`;
+        rt.width.baseVal.valueAsString = `${this.TILE_SIZE}vh`;
+        rt.height.baseVal.valueAsString = `${this.TILE_SIZE}vh`;
         rt.rx.baseVal.valueAsString = `${SvgAdapter.TILE_PADDING}vh`;
         rt.ry.baseVal.valueAsString = `${SvgAdapter.TILE_PADDING}vh`;
         rt.setAttribute('fill', '#c0c0c0');
@@ -70,10 +74,10 @@ export class SvgAdapter {
 
     private createNumberRect(x: number, y: number): SVGRectElement {
         const rt = this.element.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rt.x.baseVal.valueAsString = `${SvgAdapter.PADDING + x * SvgAdapter.GRID_FACTOR}vh`;
-        rt.y.baseVal.valueAsString = `${SvgAdapter.PADDING + y * SvgAdapter.GRID_FACTOR}vh`;
-        rt.width.baseVal.valueAsString = `${SvgAdapter.TILE_SIZE}vh`;
-        rt.height.baseVal.valueAsString = `${SvgAdapter.TILE_SIZE}vh`;
+        rt.x.baseVal.valueAsString = `${SvgAdapter.PADDING + x * this.GRID_FACTOR}vh`;
+        rt.y.baseVal.valueAsString = `${SvgAdapter.PADDING + y * this.GRID_FACTOR}vh`;
+        rt.width.baseVal.valueAsString = `${this.TILE_SIZE}vh`;
+        rt.height.baseVal.valueAsString = `${this.TILE_SIZE}vh`;
         rt.rx.baseVal.valueAsString = `${SvgAdapter.TILE_PADDING}vh`;
         rt.ry.baseVal.valueAsString = `${SvgAdapter.TILE_PADDING}vh`;
         rt.setAttribute('stroke-width', '2px');
@@ -84,8 +88,8 @@ export class SvgAdapter {
 
     private text(x: number, y: number): SVGTextElement {
         const t = this.element.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'text');
-        t.setAttribute('x', `${SvgAdapter.PADDING + x * SvgAdapter.GRID_FACTOR + SvgAdapter.TILE_SIZE * .5}vh`);
-        t.setAttribute('y', `${SvgAdapter.PADDING + y * SvgAdapter.GRID_FACTOR + SvgAdapter.TILE_SIZE * .5}vh`);
+        t.setAttribute('x', `${SvgAdapter.PADDING + x * this.GRID_FACTOR + this.TILE_SIZE * .5}vh`);
+        t.setAttribute('y', `${SvgAdapter.PADDING + y * this.GRID_FACTOR + this.TILE_SIZE * .5}vh`);
         t.setAttribute('opacity', '0');
         t.setAttribute('text-anchor', 'middle')
         t.setAttribute('alignment-baseline', 'central')
