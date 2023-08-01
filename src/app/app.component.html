@@ -1,1 +1,3 @@
-<router-outlet></router-outlet>
+<div class="theme" [ngClass]="{dark: theme == 'dark', bright: theme == 'bright'}">
+    <router-outlet></router-outlet>
+</div>

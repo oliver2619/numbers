@@ -12,7 +12,48 @@ export class GameService {
 
   private static readonly KEY = 'game';
 
-  private game: Game | undefined;
+  private game?: Game;
+  private adapter?: SvgAdapter;
+
+  get canCleanup(): boolean {
+    return this.game !== undefined && this.game.canCleanup;
+  }
+
+  get canDelete(): boolean {
+    return this.game !== undefined && this.game.canDelete;
+  }
+
+  get canInjectNew(): boolean {
+    return this.game !== undefined && this.game.canInjectNew;
+  }
+
+  get canPauseInject(): boolean {
+    return this.game !== undefined && this.game.canPauseInject;
+  }
+
+  get canUndo(): boolean {
+    return false;
+  }
+
+  get costsCleanup(): number {
+    return this.game !== undefined ? this.game.costsCleanup : 0;
+  }
+
+  get costsDelete(): number {
+    return this.game !== undefined ? this.game.costsDelete : 0;
+  }
+
+  get costsInjectNew(): number {
+    return this.game !== undefined ? this.game.costsInjectNew : 0;
+  }
+
+  get costsPauseInject(): number {
+    return this.game !== undefined ? this.game.costsPauseInject : 0;
+  }
+
+  get costsUndo(): number {
+    return this.game !== undefined ? this.game.costsUndo : 0;
+  }
 
   get canResume(): boolean {
     return this.localStoreService.has(GameService.KEY);
@@ -20,6 +61,10 @@ export class GameService {
 
   get hasGame(): boolean {
     return this.game !== undefined;
+  }
+
+  get withItems(): boolean {
+    return this.game !== undefined ? this.game.withItems : false;
   }
 
   get isAnimating(): boolean {
@@ -36,8 +81,23 @@ export class GameService {
 
   constructor(private readonly localStoreService: LocalStoreService, private readonly hiscoreService: HiscoreService) { }
 
+  cleanup() {
+    this.game?.cleanup();
+    this.save();
+  }
+
+  deleteOne() {
+    this.game?.deleteOne();
+    this.save();
+  }
+
   endGame() {
 
+  }
+
+  injectNew() {
+    this.game?.injectNew();
+    this.save();
   }
 
   moved(x: number, y: number) {
@@ -63,27 +123,39 @@ export class GameService {
     this.save();
   }
 
+  pauseInject() {
+    this.game?.pauseInject();
+    this.save();
+  }
+
   resume() {
     const json: GameJson = this.localStoreService.load(GameService.KEY);
     this.game = Game.load(json);
   }
 
+  undo() {
+
+  }
+
   updateSvg(element: SVGSVGElement) {
-    this.game!.updateSvg(new SvgAdapter(element))
+    this.adapter = new SvgAdapter(element);
+    this.game!.updateSvg(this.adapter);
   }
 
   private convertDirection(x: number, y: number, callback: (x: number, y: number) => void) {
-    if (Math.abs(x) > Math.abs(y)) {
-      if (x > 0) {
-        callback(1, 0);
+    if (this.adapter!.isMovedOverThreshold(Math.max(Math.abs(x), Math.abs(y)))) {
+      if (Math.abs(x) > Math.abs(y)) {
+        if (x > 0) {
+          callback(1, 0);
+        } else {
+          callback(-1, 0);
+        }
       } else {
-        callback(-1, 0);
-      }
-    } else {
-      if (y > 0) {
-        callback(0, 1);
-      } else {
-        callback(0, -1);
+        if (y > 0) {
+          callback(0, 1);
+        } else {
+          callback(0, -1);
+        }
       }
     }
   }

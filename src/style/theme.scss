@@ -1,0 +1,25 @@
+div.theme {
+    &.bright {
+        color: black;
+        background-color: white;
+        transition: all 400ms;
+
+        button {
+            color: black;
+            border-color: #c0c0c0;
+            background-color: #e0e0e0;
+        }
+    }
+
+    &.dark {
+        color: white;
+        background-color: black;
+        transition: all 400ms;
+
+        button {
+            color: white;
+            border-color: #404040;
+            background-color: #808080;
+        }
+    }
+}

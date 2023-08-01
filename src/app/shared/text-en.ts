@@ -1,6 +1,15 @@
 import { Dictionary } from "./dictionary";
 
 export const EN: Dictionary = {
+    'cancel': 'Cancel',
+    'game.joker': 'Joker',
+    'game.joker.action': 'Action',
+    'game.joker.action.cleanup': 'Cleanup',
+    'game.joker.action.delete': 'Delete',
+    'game.joker.action.pauseInject': 'Pause injection',
+    'game.joker.action.injectNew': 'Inject new',
+    'game.joker.action.undo': 'Undo',
+    'game.joker.costs': 'Costs',
     'game.over': 'Game over',
     'game.score': 'Score',
     'hiscore.max': 'Max',
@@ -14,6 +23,8 @@ export const EN: Dictionary = {
     'menu.resume': 'Resume game',
     'menu.settings': 'Settings',
     'menu.start': 'Start',
+    'theme.bright': 'Bright',
+    'theme.dark': 'Dark',
     'title': 'Numbers',
     'version': 'Version'
 };

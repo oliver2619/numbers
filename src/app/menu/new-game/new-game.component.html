@@ -5,14 +5,12 @@
         <label><input type="radio" name="size" formControlName="size" [value]="4">4&times;4</label>
         <label><input type="radio" name="size" formControlName="size" [value]="5">5&times;5</label>
     </div>
-    <!-- 
     <div class="radio">
         <label><input type="radio" name="items" formControlName="items" [value]="true"><span nText="menu.level1"></span></label>
         <label><input type="radio" name="items" formControlName="items" [value]="false"><span nText="menu.level2"></span></label>
     </div>
-    -->
 </form>
 <div class="button-list">
-    <button type="button" nText="menu.back" routerLink=".."></button>
     <button type="button" nText="menu.start" (click)="start()"></button>
+    <button type="button" nText="cancel" routerLink=".."></button>
 </div>

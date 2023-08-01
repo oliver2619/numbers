@@ -16,7 +16,7 @@ interface NewGameFormValue {
 })
 export class NewGameComponent {
 
-  readonly formGroup: FormGroup
+  readonly formGroup: FormGroup;
 
   private get value(): NewGameFormValue {
     return this.formGroup.value;
@@ -25,7 +25,7 @@ export class NewGameComponent {
   constructor(private readonly gameService: GameService, private readonly router: Router, formBuilder: FormBuilder) {
     this.formGroup = formBuilder.group({});
     this.formGroup.addControl('size', formBuilder.control(4));
-    this.formGroup.addControl('items', formBuilder.control(false));
+    this.formGroup.addControl('items', formBuilder.control(true));
   }
 
   start() {
@@ -36,5 +36,4 @@ export class NewGameComponent {
     });
     this.router.navigateByUrl('/game/main');
   }
-
 }

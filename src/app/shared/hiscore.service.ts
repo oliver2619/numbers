@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { max } from 'rxjs';
 import { LocalStoreService } from './local-store.service';
 
 export interface HiscoreItemJson {

@@ -11,8 +11,8 @@
             <span *ngIf="r.items" nText="menu.level1"></span>
             <span *ngIf="!r.items" nText="menu.level2"></span>
         </td>
-        <td class="number">{{r.score}}</td>
-        <td class="number">{{r.maxNumber}}</td>
+        <td class="number">{{r.score | number:'1.0'}}</td>
+        <td class="number">{{r.maxNumber | number:'1.0'}}</td>
     </tr>
 </table>
 <button type="button" nText="menu.back" routerLink=".."></button>

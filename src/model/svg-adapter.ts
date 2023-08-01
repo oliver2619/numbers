@@ -3,9 +3,9 @@ export class SvgAdapter {
 
     private static readonly TILE_PADDING = 1;
     private static readonly PADDING = 0.5;
-    private static readonly TEXT_COLOR: string[] = ['#9a60b4', '#8600b3', '#2d00b3', '#002db3', '#0086b3', '#00b386', '#00b32d', '#2db300', '#86b300', '#b38600', '#b32d00', '#fff', '#fff', '#fff', '#fff', '#fff'];
-    private static readonly FILL_COLOR: string[] = ['#e6acd7', '#d7ace6', '#baace6', '#acbae6', '#acd7e6', '#ace6d7', '#ace6ba', '#bae6ac', '#d7e6ac', '#e6d7ac', '#e6baac', '#9a60b4', '#d7ace6', '#baace6', '#acbae6', '#acd7e6'];
-    private static readonly BORDER_COLOR: string[] = ['#9a60b4', '#8600b3', '#2d00b3', '#002db3', '#0086b3', '#00b386', '#00b32d', '#2db300', '#86b300', '#b38600', '#b32d00', '#9a60b4', '#d7ace6', '#baace6', '#acbae6', '#acd7e6'];
+    private static readonly TEXT_COLOR: string[] = ['#9a60b4', '#8600b3', '#2d00b3', '#002db3', '#0086b3', '#00b386', '#00b32d', '#2db300', '#86b300', '#b38600', '#b32d00', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff'];
+    private static readonly FILL_COLOR: string[] = ['#e6acd7', '#d7ace6', '#baace6', '#acbae6', '#acd7e6', '#ace6d7', '#ace6ba', '#bae6ac', '#d7e6ac', '#e6d7ac', '#e6baac', '#9a60b4', '#d7ace6', '#baace6', '#acbae6', '#acd7e6', '#ace6d7', '#ace6ba', '#bae6ac', '#d7e6ac'];
+    private static readonly BORDER_COLOR: string[] = ['#9a60b4', '#8600b3', '#2d00b3', '#002db3', '#0086b3', '#00b386', '#00b32d', '#2db300', '#86b300', '#b38600', '#b32d00', '#9a60b4', '#d7ace6', '#baace6', '#acbae6', '#acd7e6', '#ace6d7', '#ace6ba', '#bae6ac', '#d7e6ac'];
 
     private TILE_SIZE = 9;
     private GRID_FACTOR = this.TILE_SIZE + SvgAdapter.TILE_PADDING;
@@ -15,6 +15,8 @@ export class SvgAdapter {
     private readonly fieldsGroup: SVGGElement;
     private readonly numbersGroup: SVGGElement;
 
+    private size = 0;
+
     constructor(private readonly element: SVGSVGElement) {
         this.fieldsGroup = this.group();
         this.numbersGroup = this.group();
@@ -23,10 +25,12 @@ export class SvgAdapter {
     }
 
     init(size: number) {
+        this.size = size;
         this.TILE_SIZE = 9 - (size - 4) * 2;
         this.GRID_FACTOR = this.TILE_SIZE + SvgAdapter.TILE_PADDING;
-        this.element.setAttribute('width', `${SvgAdapter.PADDING * 2 + size * this.GRID_FACTOR - SvgAdapter.TILE_PADDING}vh`);
-        this.element.setAttribute('height', `${SvgAdapter.PADDING * 2 + size * this.GRID_FACTOR - SvgAdapter.TILE_PADDING}vh`);
+        const relSize = SvgAdapter.PADDING * 2 + size * this.GRID_FACTOR - SvgAdapter.TILE_PADDING;
+        this.element.setAttribute('width', `${relSize}vh`);
+        this.element.setAttribute('height', `${relSize}vh`);
         for (let y = 0; y < size; ++y) {
             for (let x = 0; x < size; ++x) {
                 this.createField(x, y);
@@ -43,6 +47,11 @@ export class SvgAdapter {
         t.setAttribute('opacity', '0');
     }
 
+    isMovedOverThreshold(distance: number): boolean {
+        const th = (this.element.clientWidth / this.size) * 0.5;
+        return distance > th;
+    }
+
     number(index: number, numberIndex: number) {
         const rt = this.numberRects[index];
         rt.setAttribute('opacity', '1');
@@ -53,10 +62,10 @@ export class SvgAdapter {
         t.setAttribute('opacity', '1');
         const txt = `${1 << numberIndex}`;
         t.innerHTML = txt;
-        if (txt.length < 5) {
+        if (txt.length < 4) {
             t.setAttribute('font-size', '5vh');
         } else {
-            t.setAttribute('font-size', '4vh');
+            t.setAttribute('font-size', `${8 - txt.length}vh`);
         }
     }
 

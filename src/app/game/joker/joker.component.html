@@ -1,0 +1,30 @@
+<h2 nText="game.joker"></h2>
+<table>
+    <tr>
+        <th nText="game.joker.action"></th>
+        <th nText="game.joker.costs"></th>
+    </tr>
+    <tr>
+        <td><button type="button" [disabled]="!canCleanup" (click)="cleanup()" nText="game.joker.action.cleanup"></button></td>
+        <td class="number">{{costsCleanup | number:'1.0'}}</td>
+    </tr>
+    <tr>
+        <td><button type="button" [disabled]="!canUndo" (click)="undo()" nText="game.joker.action.undo"></button></td>
+        <td class="number">{{costsUndo | number:'1.0'}}</td>
+    </tr>
+    <tr>
+        <td><button type="button" [disabled]="!canDelete" (click)="deleteOne()" nText="game.joker.action.delete"></button></td>
+        <td class="number">{{costsDelete | number:'1.0'}}</td>
+    </tr>
+    <tr>
+        <td><button type="button" [disabled]="!canPauseInject" (click)="pauseInject()" nText="game.joker.action.pauseInject"></button></td>
+        <td class="number">{{costsPauseInject | number:'1.0'}}</td>
+    </tr>
+    <tr>
+        <td><button type="button" [disabled]="!canInjectNew" (click)="injectNew()" nText="game.joker.action.injectNew"></button></td>
+        <td class="number">{{costsInjectNew | number:'1.0'}}</td>
+    </tr>
+</table>
+<div class="button-list">
+    <button type="button" nText="cancel" routerLink="/game/main"></button>
+</div>

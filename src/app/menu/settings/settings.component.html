@@ -1,2 +1,8 @@
 <h2 nText="menu.settings"></h2>
+<form [formGroup]="formGroup">
+    <div class="radio">
+        <label><input type="radio" name="theme" formControlName="theme" value="bright"><span nText="theme.bright"></span></label>
+        <label><input type="radio" name="theme" formControlName="theme" value="dark"><span nText="theme.dark"></span></label>
+    </div>
+</form>
 <button type="button" nText="menu.back" routerLink=".."></button>

@@ -1,8 +1,10 @@
 $font-family: Segoe UI, sans-serif;
+$font-size: 4vh;
+$font-size-small: 3vh;
 
 @mixin font {
     font-family: $font-family;
-    font-size: 4vh;
+    font-size: $font-size;
     font-weight: 300;
 }
 

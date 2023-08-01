@@ -4,11 +4,13 @@ import { CommonModule } from '@angular/common';
 import { GameRoutingModule } from './game-routing.module';
 import { MainComponent } from './main/main.component';
 import { SharedModule } from '../shared/shared.module';
+import { JokerComponent } from './joker/joker.component';
 
 
 @NgModule({
   declarations: [
-    MainComponent
+    MainComponent,
+    JokerComponent
   ],
   imports: [
     CommonModule,

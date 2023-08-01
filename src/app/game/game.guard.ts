@@ -13,3 +13,12 @@ export const gameGuard: CanActivateFn = (route, state) => {
     return inject(Router).createUrlTree(['menu']);
   }
 };
+
+export const jokerGuard: CanActivateFn = (route, state) => {
+  const gameService = inject(GameService);
+  if (gameService.withItems) {
+    return true;
+  } else {
+    return inject(Router).createUrlTree(['game/main']);
+  }
+};

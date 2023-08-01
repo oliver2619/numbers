@@ -1,6 +1,7 @@
-<div><span nText="game.score"></span>: {{score}}</div>
+<div><span nText="game.score"></span>: {{score | number:'1.0'}}</div>
 <svg #svg (pointerdown)="pointerDown($event)" (pointerup)="pointerUp($event)" (pointermove)="pointerMove($event)"></svg>
 <div [ngStyle]="{visibility: isOver ? 'visible' : 'hidden'}" nText="game.over"></div>
 <div class="button-list">
+    <button *ngIf="withItems" type="button" nText="game.joker" routerLink="/game/joker"></button>
     <button type="button" nText="menu.back" routerLink="/menu"></button>
 </div>

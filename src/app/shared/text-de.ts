@@ -1,6 +1,15 @@
 import { Dictionary } from "./dictionary";
 
 export const DE: Dictionary = {
+    'cancel': 'Abbrechen',
+    'game.joker': 'Joker',
+    'game.joker.action': 'Aktion',
+    'game.joker.action.cleanup': 'Aufräumen',
+    'game.joker.action.delete': 'Löschen',
+    'game.joker.action.pauseInject': 'Einwurf Pause',
+    'game.joker.action.injectNew': 'Neu einwerfen',
+    'game.joker.action.undo': 'Rückgängig',
+    'game.joker.costs': 'Kosten',
     'game.over': 'Spiel zuende',
     'game.score': 'Punkte',
     'hiscore.max': 'Max',
@@ -14,6 +23,8 @@ export const DE: Dictionary = {
     'menu.resume': 'Spiel fortsetzen',
     'menu.settings': 'Einstellungen',
     'menu.start': 'Start',
+    'theme.bright': 'Hell',
+    'theme.dark': 'Dunkel',
     'title': 'Numbers',
     'version': 'Version'
 };

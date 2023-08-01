@@ -10,10 +10,60 @@ export class Game {
 
     readonly size: number;
 
-    private adapter: SvgAdapter | undefined;
+    private adapter?: SvgAdapter;
+
+    get canCleanup(): boolean {
+        return this._score >= this.costsCleanup;
+    }
+
+    get canDelete(): boolean {
+        return this._score >= this.costsDelete && this.usedFields > 1;
+    }
+
+    get canInjectNew(): boolean {
+        return this._score >= this.costsInjectNew && this.lastInjectionPosition !== undefined;
+    }
+
+    get canPauseInject(): boolean {
+        return this._score >= this.costsPauseInject && this.lastInjectionPosition !== undefined;
+    }
+
+    get costsCleanup(): number {
+        return this.minNumber * 1600;
+    }
+
+    get costsDelete(): number {
+        return this.minNumber * 400;
+    }
+
+    get costsInjectNew(): number {
+        return this.minNumber * 100;
+    }
+
+    get costsPauseInject(): number {
+        return this.minNumber * 200;
+    }
+
+    get costsUndo(): number {
+        return this.minNumber * 800;
+    }
 
     get maxNumber(): number {
-        return 1 << this.numbers.reduce((prev: number, cur: number | undefined) => Math.max(prev, cur !== undefined ? cur : 0), 0);
+        return 1 << this.maxNumberIndex;
+    }
+
+    get maxNumberIndex(): number {
+        const nonNulls = <number[]>this.numbers.filter(it => it !== undefined);
+        return Math.max.apply(Math, nonNulls);
+    }
+
+    private get minNumber(): number {
+        return 1 << this.minNumberIndex;
+    }
+
+    get minNumberIndex(): number {
+        const nonNulls = <number[]>this.numbers.filter(it => it !== undefined);
+        return Math.min.apply(Math, nonNulls);
     }
 
     get usedFields(): number {
@@ -28,7 +78,7 @@ export class Game {
         return !(this.canMoveDown() || this.canMoveUp() || this.canMoveLeft() || this.canMoveRight());
     }
 
-    private constructor(private readonly numbers: Array<number | undefined>, private _score: number, private items: string[], readonly withItems: boolean) {
+    private constructor(private readonly numbers: Array<number | undefined>, private _score: number, private items: string[], readonly withItems: boolean, private lastInjectionPosition: number | undefined) {
         this.size = Math.sqrt(numbers.length) | 0;
     }
 
@@ -44,6 +94,74 @@ export class Game {
         } else {
             return false;
         }
+    }
+
+    cleanup() {
+        this._score -= this.costsCleanup;
+        this.numbers.sort((n1, n2) => {
+            const v1 = n1 !== undefined ? n1 : -1;
+            const v2 = n2 !== undefined ? n2 : -1;
+            return v2 - v1;
+        });
+        this.lastInjectionPosition = undefined;
+    }
+
+    deleteOne() {
+        this._score -= this.costsDelete;
+        this.setFieldAtIndex(this.getRandomField(), undefined);
+    }
+
+    injectNew() {
+        if (this.lastInjectionPosition !== undefined) {
+            this._score -= this.costsInjectNew;
+            this.setFieldAtIndex(this.lastInjectionPosition, undefined);
+            this.injectNumber();
+        }
+    }
+
+    move(x: number, y: number) {
+        if (x < 0) {
+            this.moveLeft();
+            this.injectNumber();
+        } else if (x > 0) {
+            this.moveRight();
+            this.injectNumber();
+        } else if (y < 0) {
+            this.moveDown();
+            this.injectNumber();
+        } else if (y > 0) {
+            this.moveUp();
+            this.injectNumber();
+        }
+    }
+
+    pauseInject() {
+        if (this.lastInjectionPosition !== undefined) {
+            this._score -= this.costsPauseInject;
+            this.setFieldAtIndex(this.lastInjectionPosition, undefined);
+        }
+    }
+
+    save(): GameJson {
+        const ret: GameJson = {
+            version: 1,
+            numbers: this.numbers.map(it => it !== undefined ? it : null),
+            score: this._score,
+            items: this.items,
+            withItems: this.withItems,
+            lastInjectionPosition: this.lastInjectionPosition
+        };
+        return ret;
+    }
+
+    updateSvg(adapter: SvgAdapter) {
+        this.adapter = adapter;
+        this.adapter.init(Math.sqrt(this.numbers.length) | 0);
+        this.numbers.forEach((value, index) => {
+            if (value !== undefined) {
+                adapter.number(index, value);
+            }
+        });
     }
 
     private canMoveLeft(): boolean {
@@ -101,23 +219,6 @@ export class Game {
             }
         }
         return false;
-
-    }
-
-    move(x: number, y: number) {
-        if (x < 0) {
-            this.moveLeft();
-            this.injectNumber();
-        } else if (x > 0) {
-            this.moveRight();
-            this.injectNumber();
-        } else if (y < 0) {
-            this.moveDown();
-            this.injectNumber();
-        } else if (y > 0) {
-            this.moveUp();
-            this.injectNumber();
-        }
     }
 
     private moveLeft() {
@@ -232,48 +333,55 @@ export class Game {
         }
     }
 
-    save(): GameJson {
-        const ret: GameJson = {
-            version: 1,
-            numbers: this.numbers.map(it => it !== undefined ? it : null),
-            score: this._score,
-            items: this.items,
-            withItems: this.withItems
-        };
-        return ret;
-    }
-
-    updateSvg(adapter: SvgAdapter) {
-        this.adapter = adapter;
-        this.adapter.init(Math.sqrt(this.numbers.length) | 0);
-        this.numbers.forEach((value, index) => {
-            if (value !== undefined) {
-                adapter.number(index, value);
-            }
-        });
-    }
-
     private getField(x: number, y: number): number | undefined {
         return this.numbers[x + y * this.size];
     }
 
     private setField(x: number, y: number, n: number | undefined) {
-        this.numbers[x + y * this.size] = n;
+        this.setFieldAtIndex(x + y * this.size, n);
+    }
+
+    private setFieldAtIndex(field: number, n: number | undefined) {
+        this.numbers[field] = n;
+        if (this.lastInjectionPosition === field && n === undefined) {
+            this.lastInjectionPosition = undefined;
+        }
         if (this.adapter !== undefined) {
             if (n !== undefined) {
-                this.adapter.number(x + y * this.size, n);
+                this.adapter.number(field, n);
             } else {
-                this.adapter.clear(x + y * this.size);
+                this.adapter.clear(field);
             }
         }
     }
 
     private injectNumber() {
         const i = this.getRandomFreeField();
-        this.numbers[i] = 0;
+        this.lastInjectionPosition = i;
+        this.numbers[i] = this.getNextInjextNumberIndex();
         if (this.adapter !== undefined) {
             this.adapter.number(i, this.numbers[i]!);
         }
+    }
+
+    private getNextInjextNumberIndex(): number {
+        const max = Math.max(0, this.maxNumberIndex - this.numbers.length + 2);
+        const min = this.minNumberIndex;
+        return Math.min(max, min);
+    }
+
+    private getRandomField(): number {
+        let i = Math.floor(Math.random() * this.usedFields);
+        for (let f = 0; f < this.numbers.length; ++f) {
+            if (this.numbers[f] !== undefined) {
+                if (i === 0) {
+                    return f;
+                } else {
+                    --i;
+                }
+            }
+        }
+        throw Error('No field with number found');
     }
 
     private getRandomFreeField(): number {
@@ -295,13 +403,13 @@ export class Game {
         for (let i = 0; i < numbers.length; ++i) {
             numbers[i] = undefined;
         }
-        const ret = new Game(numbers, 0, [], settings.items);
+        const ret = new Game(numbers, 0, [], settings.items, undefined);
         ret.injectNumber();
         ret.injectNumber();
         return ret;
     }
 
     static load(json: GameJson): Game {
-        return new Game(json.numbers.map(it => it !== null ? it : undefined), json.score, json.items.slice(0), json.withItems);
+        return new Game(json.numbers.map(it => it !== null ? it : undefined), json.score, json.items.slice(0), json.withItems, json.lastInjectionPosition);
     }
 }

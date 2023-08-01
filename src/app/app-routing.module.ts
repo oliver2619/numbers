@@ -7,7 +7,7 @@ const routes: Routes = [{
   path: '',
   pathMatch: 'full',
   component: SplashComponent
-},{
+}, {
   path: 'menu',
   loadChildren: () => import('./menu/menu.module').then(m => m.MenuModule)
 }, {
@@ -20,7 +20,7 @@ const routes: Routes = [{
 }];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { useHash: true })],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

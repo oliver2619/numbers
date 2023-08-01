@@ -4,4 +4,5 @@ export interface GameJson {
     score: number;
     items: string[];
     withItems: boolean;
+    lastInjectionPosition?: number;
 }

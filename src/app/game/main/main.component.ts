@@ -24,6 +24,10 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     return this.gameService.isOver;
   }
 
+  get withItems(): boolean {
+    return this.gameService.withItems;
+  }
+
   constructor(private readonly gameService: GameService) { }
 
   ngOnDestroy(): void {
