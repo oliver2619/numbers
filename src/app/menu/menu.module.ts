@@ -8,6 +8,7 @@ import { NewGameComponent } from './new-game/new-game.component';
 import { HiscoreComponent } from './hiscore/hiscore.component';
 import { SettingsComponent } from './settings/settings.component';
 import { SharedModule } from '../shared/shared.module';
+import { ResumeComponent } from './resume/resume.component';
 
 
 @NgModule({
@@ -15,7 +16,8 @@ import { SharedModule } from '../shared/shared.module';
     MainComponent,
     NewGameComponent,
     HiscoreComponent,
-    SettingsComponent
+    SettingsComponent,
+    ResumeComponent
   ],
   imports: [
     CommonModule,

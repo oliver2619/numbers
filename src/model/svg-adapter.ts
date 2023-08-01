@@ -62,11 +62,7 @@ export class SvgAdapter {
         t.setAttribute('opacity', '1');
         const txt = `${1 << numberIndex}`;
         t.innerHTML = txt;
-        if (txt.length < 4) {
-            t.setAttribute('font-size', '5vh');
-        } else {
-            t.setAttribute('font-size', `${8 - txt.length}vh`);
-        }
+        t.setAttribute('class', `s${txt.length}`);
     }
 
     private createField(x: number, y: number) {
@@ -91,6 +87,7 @@ export class SvgAdapter {
         rt.ry.baseVal.valueAsString = `${SvgAdapter.TILE_PADDING}vh`;
         rt.setAttribute('stroke-width', '2px');
         rt.setAttribute('opacity', '0');
+        rt.classList.add('number');
         this.numbersGroup.appendChild(rt);
         return rt;
     }

@@ -1,4 +1,4 @@
-import { GameJson } from "./game-json";
+import { GameJson2, GameStateJson2 } from "./game-json-2";
 import { SvgAdapter } from "./svg-adapter";
 
 export interface NewGameSettings {
@@ -6,9 +6,36 @@ export interface NewGameSettings {
     items: boolean;
 }
 
+class GameState {
+
+    constructor(readonly numbers: Array<number | undefined>, public score: number, public lastInjectionPosition: number | undefined) { }
+
+    static load(json: GameStateJson2): GameState {
+        return new GameState(json.numbers.map(it => it !== null ? it : undefined), json.score, json.lastInjectionPosition);
+    }
+
+    copy(): GameState {
+        return new GameState(this.numbers.slice(0), this.score, this.lastInjectionPosition);
+    }
+
+    save(): GameStateJson2 {
+        const ret: GameStateJson2 = {
+            numbers: this.numbers.map(it => it !== undefined ? it : null),
+            score: this.score,
+            lastInjectionPosition: this.lastInjectionPosition
+        };
+        return ret;
+    }
+}
+
 export class Game {
 
+    private static readonly MAX_UNDO_LEVELS = 5;
+    private static readonly MAX_STATE_SIZE = Game.MAX_UNDO_LEVELS + 1;
+
     readonly size: number;
+
+    private readonly states: GameState[];
 
     private adapter?: SvgAdapter;
 
@@ -26,6 +53,10 @@ export class Game {
 
     get canPauseInject(): boolean {
         return this._score >= this.costsPauseInject && this.lastInjectionPosition !== undefined;
+    }
+
+    get canUndo(): boolean {
+        return this.states.length > 1 && this.states[this.states.length - 2].score >= this.costsUndo;
     }
 
     get costsCleanup(): number {
@@ -78,8 +109,29 @@ export class Game {
         return !(this.canMoveDown() || this.canMoveUp() || this.canMoveLeft() || this.canMoveRight());
     }
 
-    private constructor(private readonly numbers: Array<number | undefined>, private _score: number, private items: string[], readonly withItems: boolean, private lastInjectionPosition: number | undefined) {
-        this.size = Math.sqrt(numbers.length) | 0;
+    private get lastInjectionPosition(): number | undefined {
+        return this.states[this.states.length - 1].lastInjectionPosition;
+    }
+
+    private set lastInjectionPosition(p: number | undefined) {
+        this.states[this.states.length - 1].lastInjectionPosition = p;
+    }
+
+    private get numbers(): Array<number | undefined> {
+        return this.states[this.states.length - 1].numbers;
+    }
+
+    private get _score(): number {
+        return this.states[this.states.length - 1].score;
+    }
+
+    private set _score(s: number) {
+        this.states[this.states.length - 1].score = s;
+    }
+
+    private constructor(states: GameState[], readonly withItems: boolean) {
+        this.size = Math.sqrt(states[0].numbers.length) | 0;
+        this.states = states.map(it => new GameState(it.numbers.slice(0), it.score, it.lastInjectionPosition));
     }
 
     canMove(x: number, y: number): boolean {
@@ -97,22 +149,25 @@ export class Game {
     }
 
     cleanup() {
+        this.addState();
         this._score -= this.costsCleanup;
         this.numbers.sort((n1, n2) => {
-            const v1 = n1 !== undefined ? n1 : -1;
-            const v2 = n2 !== undefined ? n2 : -1;
+            const v1: number = n1 !== undefined ? n1 : -1;
+            const v2: number = n2 !== undefined ? n2 : -1;
             return v2 - v1;
         });
         this.lastInjectionPosition = undefined;
     }
 
     deleteOne() {
+        this.addState();
         this._score -= this.costsDelete;
         this.setFieldAtIndex(this.getRandomField(), undefined);
     }
 
     injectNew() {
         if (this.lastInjectionPosition !== undefined) {
+            this.addState();
             this._score -= this.costsInjectNew;
             this.setFieldAtIndex(this.lastInjectionPosition, undefined);
             this.injectNumber();
@@ -121,15 +176,19 @@ export class Game {
 
     move(x: number, y: number) {
         if (x < 0) {
+            this.addState();
             this.moveLeft();
             this.injectNumber();
         } else if (x > 0) {
+            this.addState();
             this.moveRight();
             this.injectNumber();
         } else if (y < 0) {
+            this.addState();
             this.moveDown();
             this.injectNumber();
         } else if (y > 0) {
+            this.addState();
             this.moveUp();
             this.injectNumber();
         }
@@ -137,21 +196,28 @@ export class Game {
 
     pauseInject() {
         if (this.lastInjectionPosition !== undefined) {
+            this.addState();
             this._score -= this.costsPauseInject;
             this.setFieldAtIndex(this.lastInjectionPosition, undefined);
         }
     }
 
-    save(): GameJson {
-        const ret: GameJson = {
-            version: 1,
-            numbers: this.numbers.map(it => it !== undefined ? it : null),
-            score: this._score,
-            items: this.items,
+    save(): GameJson2 {
+        const ret: GameJson2 = {
+            version: 2,
+            saved: new Date().getTime(),
             withItems: this.withItems,
-            lastInjectionPosition: this.lastInjectionPosition
+            history: this.states.map(it => it.save())
         };
         return ret;
+    }
+
+    undo() {
+        if (this.states.length > 1) {
+            this.states.pop();
+            const c = this.costsUndo;
+            this.states.forEach(it => it.score -= c);
+        }
     }
 
     updateSvg(adapter: SvgAdapter) {
@@ -162,6 +228,14 @@ export class Game {
                 adapter.number(index, value);
             }
         });
+    }
+
+    private addState() {
+        const last = this.states[this.states.length - 1];
+        this.states.push(last.copy());
+        while (this.states.length > Game.MAX_STATE_SIZE) {
+            this.states.shift();
+        }
     }
 
     private canMoveLeft(): boolean {
@@ -403,13 +477,15 @@ export class Game {
         for (let i = 0; i < numbers.length; ++i) {
             numbers[i] = undefined;
         }
-        const ret = new Game(numbers, 0, [], settings.items, undefined);
+        const states: GameState[] = [new GameState(numbers, 0, undefined)];
+        const ret = new Game(states, settings.items);
         ret.injectNumber();
         ret.injectNumber();
         return ret;
     }
 
-    static load(json: GameJson): Game {
-        return new Game(json.numbers.map(it => it !== null ? it : undefined), json.score, json.items.slice(0), json.withItems, json.lastInjectionPosition);
+    static load(json: GameJson2): Game {
+        const states: GameState[] = json.history.map(it => GameState.load(it));
+        return new Game(states, json.withItems);
     }
 }

@@ -5,7 +5,7 @@ import { GameService } from './game.service';
 export const gameGuard: CanActivateFn = (route, state) => {
   const gameService = inject(GameService);
   if (!gameService.hasGame && gameService.canResume) {
-    gameService.resume();
+    gameService.resumeLast();
   }
   if (gameService.hasGame) {
     return true;

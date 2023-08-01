@@ -14,7 +14,7 @@ export class HiscoreComponent {
   constructor(hiscoreService: HiscoreService) {
     this.records = hiscoreService.get();
     this.records.sort((i1, i2) => {
-      return i1.score - i2.score
+      return i2.score - i1.score
     });
   }
 }

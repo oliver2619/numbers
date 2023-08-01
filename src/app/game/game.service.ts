@@ -1,16 +1,26 @@
 import { Injectable } from '@angular/core';
 import { Game, NewGameSettings } from 'src/model/game';
-import { GameJson } from 'src/model/game-json';
+import { GameJson1 } from 'src/model/game-json-1';
+import { GameJson2 } from 'src/model/game-json-2';
 import { SvgAdapter } from 'src/model/svg-adapter';
 import { HiscoreService } from '../shared/hiscore.service';
 import { LocalStoreService } from '../shared/local-store.service';
+
+export interface SavedGameInfo {
+  key: string;
+  size: number;
+  withItems: boolean;
+  saved: Date;
+  score: number;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
 
-  private static readonly KEY = 'game';
+  private static readonly KEY1 = 'game';
+  private static readonly KEY2_PREFIX = 'game:';
 
   private game?: Game;
   private adapter?: SvgAdapter;
@@ -31,8 +41,12 @@ export class GameService {
     return this.game !== undefined && this.game.canPauseInject;
   }
 
+  get canResume(): boolean {
+    return this.listSavedGames().length > 0;
+  }
+
   get canUndo(): boolean {
-    return false;
+    return this.game !== undefined && this.game.canUndo;
   }
 
   get costsCleanup(): number {
@@ -55,16 +69,8 @@ export class GameService {
     return this.game !== undefined ? this.game.costsUndo : 0;
   }
 
-  get canResume(): boolean {
-    return this.localStoreService.has(GameService.KEY);
-  }
-
   get hasGame(): boolean {
     return this.game !== undefined;
-  }
-
-  get withItems(): boolean {
-    return this.game !== undefined ? this.game.withItems : false;
   }
 
   get isAnimating(): boolean {
@@ -72,14 +78,20 @@ export class GameService {
   }
 
   get isOver(): boolean {
-    return this.game!.isOver;
+    return this.game === undefined || this.game.isOver;
   }
 
   get score(): number {
-    return this.game!.score;
+    return this.game !== undefined ? this.game.score : 0;
   }
 
-  constructor(private readonly localStoreService: LocalStoreService, private readonly hiscoreService: HiscoreService) { }
+  get withItems(): boolean {
+    return this.game !== undefined ? this.game.withItems : false;
+  }
+
+  constructor(private readonly localStoreService: LocalStoreService, private readonly hiscoreService: HiscoreService) {
+    this.migrate1To2();
+  }
 
   cleanup() {
     this.game?.cleanup();
@@ -100,18 +112,38 @@ export class GameService {
     this.save();
   }
 
-  moved(x: number, y: number) {
-    this.convertDirection(x, y, (dx, dy) => {
-      if (this.game!.canMove(dx, dy)) {
-        this.game!.move(dx, dy);
-        this.hiscoreService.save(this.game!.size, this.game!.withItems, this.game!.score, this.game!.maxNumber);
-        if (this.game!.isOver) {
-          this.remove();
-        } else {
-          this.save();
-        }
-      }
+  listSavedGames(): SavedGameInfo[] {
+    return this.localStoreService.list(GameService.KEY2_PREFIX).map(it => {
+      const json: GameJson2 = this.localStoreService.load(`${GameService.KEY2_PREFIX}${it}`);
+      const saved = new Date();
+      saved.setTime(json.saved);
+      const ret: SavedGameInfo = {
+        saved,
+        key: it,
+        score: json.history[json.history.length - 1].score,
+        size: Math.sqrt(json.history[0].numbers.length) | 0,
+        withItems: json.withItems
+      };
+      return ret;
     });
+  }
+
+  moved(x: number, y: number) {
+    this.convertDirection(x, y, (dx, dy, __) => {
+      this.movedByKeyboard(dx, dy);
+    });
+  }
+
+  movedByKeyboard(dx: number, dy: number) {
+    if (this.game !== undefined && this.game.canMove(dx, dy)) {
+      this.game.move(dx, dy);
+      this.hiscoreService.save(this.game.size, this.game.withItems, this.game.score, this.game.maxNumber);
+      if (this.game.isOver) {
+        this.remove();
+      } else {
+        this.save();
+      }
+    }
   }
 
   moving(x: number, y: number) {
@@ -128,45 +160,80 @@ export class GameService {
     this.save();
   }
 
-  resume() {
-    const json: GameJson = this.localStoreService.load(GameService.KEY);
+  resume(key: string) {
+    const json: GameJson2 = this.localStoreService.load(`${GameService.KEY2_PREFIX}${key}`);
     this.game = Game.load(json);
   }
 
-  undo() {
+  resumeLast() {
+    const games = this.listSavedGames();
+    if (games.length > 0) {
+      games.sort((g1, g2) => g2.saved.getTime() - g1.saved.getTime());
+      this.resume(games[0].key);
+    }
+  }
 
+  undo() {
+    this.game?.undo();
+    this.save();
   }
 
   updateSvg(element: SVGSVGElement) {
     this.adapter = new SvgAdapter(element);
-    this.game!.updateSvg(this.adapter);
+    this.game?.updateSvg(this.adapter);
   }
 
-  private convertDirection(x: number, y: number, callback: (x: number, y: number) => void) {
-    if (this.adapter!.isMovedOverThreshold(Math.max(Math.abs(x), Math.abs(y)))) {
+  private static getKey(size: number, withItems: boolean): string {
+    const level = withItems ? 'easy' : 'hard';
+    return `${GameService.KEY2_PREFIX}${size}:${level}`;
+  }
+
+  private convertDirection(x: number, y: number, callback: (x: number, y: number, distance: number) => void) {
+    if (this.adapter !== undefined && this.adapter.isMovedOverThreshold(Math.max(Math.abs(x), Math.abs(y)))) {
       if (Math.abs(x) > Math.abs(y)) {
         if (x > 0) {
-          callback(1, 0);
+          callback(1, 0, x);
         } else {
-          callback(-1, 0);
+          callback(-1, 0, -x);
         }
       } else {
         if (y > 0) {
-          callback(0, 1);
+          callback(0, 1, y);
         } else {
-          callback(0, -1);
+          callback(0, -1, -y);
         }
       }
     }
   }
 
+  private migrate1To2() {
+    if (this.localStoreService.has(GameService.KEY1)) {
+      const json1: GameJson1 = this.localStoreService.load(GameService.KEY1);
+      const json2: GameJson2 = {
+        version: 2,
+        saved: new Date().getTime(),
+        withItems: json1.withItems,
+        history: [{
+          numbers: json1.numbers,
+          score: json1.score,
+          lastInjectionPosition: json1.lastInjectionPosition
+        }]
+      };
+      this.localStoreService.save(GameService.getKey(Math.sqrt(json1.numbers.length) | 0, json2.withItems), json2);
+      this.localStoreService.remove(GameService.KEY1);
+    }
+  }
+
   private remove() {
-    this.localStoreService.remove(GameService.KEY);
+    if (this.game !== undefined) {
+      this.localStoreService.remove(GameService.getKey(this.game.size, this.game.withItems));
+    }
   }
 
   private save() {
-    const json = this.game!.save();
-    this.localStoreService.save(GameService.KEY, json);
+    if (this.game !== undefined) {
+      const json = this.game.save();
+      this.localStoreService.save(GameService.getKey(this.game.size, this.game.withItems), json);
+    }
   }
-
 }

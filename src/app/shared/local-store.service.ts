@@ -13,6 +13,19 @@ export class LocalStoreService {
     return localStorage.getItem(keyExp) !== null;
   }
 
+  list(key: string): string[] {
+    const fullKey = `${LocalStoreService.PREFIX}${key}`;
+    const cnt = localStorage.length;
+    const ret: string[] = [];
+    for (let i = 0; i < cnt; ++i) {
+      const k = localStorage.key(i);
+      if (k !== null && k.startsWith(fullKey)) {
+        ret.push(k.substring(fullKey.length));
+      }
+    }
+    return ret;
+  }
+
   load<T>(key: string): T {
     const keyExp = LocalStoreService.getKey(key);
     const loaded = localStorage.getItem(keyExp);

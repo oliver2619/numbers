@@ -1,7 +1,7 @@
 <h2 nText="menu"></h2>
 <div class="button-list vertical">
     <button type="button" routerLink="new-game" nText="menu.new"></button>
-    <button type="button" (click)="resume()" [disabled]="!canResume" nText="menu.resume"></button>
+    <button type="button" routerLink="resume" [disabled]="!canResume" nText="menu.resume"></button>
     <button type="button" routerLink="settings" nText="menu.settings"></button>
     <button type="button" routerLink="hiscore" nText="menu.hiscore"></button>
 </div>

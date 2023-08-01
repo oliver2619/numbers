@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Router } from '@angular/router';
 import { GameService } from 'src/app/game/game.service';
 import packageInfo from '../../../../package.json';
 
@@ -11,7 +10,7 @@ import packageInfo from '../../../../package.json';
 })
 export class MainComponent {
 
-  constructor(private readonly gameService: GameService, private readonly router: Router) {  }
+  constructor(private readonly gameService: GameService) {  }
 
   get version(): string {
 		return packageInfo.version;
@@ -19,10 +18,5 @@ export class MainComponent {
 
   get canResume(): boolean {
     return this.gameService.canResume;
-  }
-
-  resume() {
-    this.gameService.resume();
-    this.router.navigateByUrl('game');
   }
 }

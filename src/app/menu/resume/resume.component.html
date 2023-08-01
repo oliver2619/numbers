@@ -1,0 +1,17 @@
+<h2 nText="menu.resume"></h2>
+<table>
+    <tr>
+        <th colspan="2" nText="game.mode"></th>
+        <th nText="game.score"></th>
+        <th></th>
+    </tr>
+    <tr *ngFor="let g of games">
+        <td>{{g.size}}</td>
+        <td>{{g.level}}</td>
+        <td class="number">{{g.score | number:'1.0-0'}}</td>
+        <td><button type="button" (click)="resume(g.key)" nText="menu.start"></button></td>
+    </tr>
+</table>
+<div class="button-list">
+    <button type="button" nText="cancel" routerLink=".."></button>
+</div>

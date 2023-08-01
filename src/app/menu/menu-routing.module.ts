@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { HiscoreComponent } from './hiscore/hiscore.component';
 import { MainComponent } from './main/main.component';
 import { NewGameComponent } from './new-game/new-game.component';
+import { ResumeComponent } from './resume/resume.component';
 import { SettingsComponent } from './settings/settings.component';
 
 const routes: Routes = [{
@@ -15,6 +16,9 @@ const routes: Routes = [{
 }, {
   path: 'new-game',
   component: NewGameComponent
+}, {
+  path: 'resume',
+  component: ResumeComponent
 }, {
   path: 'settings',
   component: SettingsComponent

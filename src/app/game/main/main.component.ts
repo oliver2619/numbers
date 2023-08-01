@@ -65,4 +65,23 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     }
     ev.preventDefault();
   }
+
+  @HostListener('document:keydown', ['$event'])
+  keyDown(ev: KeyboardEvent) {
+    if (!ev.repeat) {
+      switch (ev.key) {
+        case 'ArrowLeft':
+          this.gameService.movedByKeyboard(-1, 0);
+          break;
+        case 'ArrowRight':
+          this.gameService.movedByKeyboard(1, 0);
+          break;
+        case 'ArrowUp':
+          this.gameService.movedByKeyboard(0, -1);
+          break;
+        case 'ArrowDown':
+          this.gameService.movedByKeyboard(0, 1);
+      }
+    }
+  }
 }
